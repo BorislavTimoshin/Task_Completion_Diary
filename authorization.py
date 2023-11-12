@@ -1,18 +1,19 @@
 from PyQt5.QtWidgets import QLineEdit, QPushButton, QLabel
-from PyQt5.QtWidgets import QMainWindow
+from PyQt5.QtWidgets import QMainWindow, QComboBox
 from PyQt5.QtGui import QPixmap
+from PyQt5.QtCore import Qt
 from database import db
 
 
 # Класс для работы с окном: авторизация пользователя
 class Authorization(QMainWindow):
     def __init__(self, parent=None):
-        super(Authorization, self).__init__(parent)
+        super().__init__(parent)
         self.parent = parent
         self.initUI()
 
     def initUI(self):
-        self.setGeometry(600, 200, 700, 400)  # 500
+        self.setGeometry(600, 200, 700, 400)
         self.setWindowTitle("Авторизация")
 
         self.pixmap_authorization = QPixmap("Images/authorization.gif")
@@ -65,7 +66,7 @@ class Authorization(QMainWindow):
 # Класс для работы с окном: вход пользователя в аккаунт
 class Login(QMainWindow):
     def __init__(self, parent=None):
-        super(Login, self).__init__(parent)
+        super().__init__(parent)
         self.parent = parent
         self.initUI()
 
@@ -125,15 +126,12 @@ class Login(QMainWindow):
             "}"
         )
 
-        self.username.editingFinished.connect(self.login_account)
-        self.password.editingFinished.connect(self.login_account)
-
     def login_account(self):
         username = self.username.text()
         password = self.password.text()
         if username and password:
             if db.person_exists(username, password):
-                self.open_main_window()
+                self.open_main_window(username)
             else:
                 self.user_not_exists.show()
 
@@ -142,15 +140,23 @@ class Login(QMainWindow):
         self.authorization = Authorization(self.parent)
         self.authorization.show()
 
-    def open_main_window(self):
+    def open_main_window(self, username):
         self.close()
+        self.parent.lbl_open_task = QLabel("<html><head/><body><p><span style=\" font-size:9pt; font-weight:600;\">"
+                                           "Открыть задачу:</span></p></body></html>", self.parent)
+        self.parent.lbl_open_task.setGeometry(20, 400, 141, 41)
+        self.parent.btn_open_task = QComboBox(self.parent)
+        self.parent.btn_open_task.setGeometry(180, 410, 201, 22)
+        self.parent.id_person = db.get_id_person(username)
+        self.parent.btn_open_task.addItems(db.get_task_names(self.parent.id_person))
+        self.parent.btn_open_task.view().setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
         self.parent.show()
 
 
 # Класс для работы с окном: регистрация пользователя
 class Registration(QMainWindow):
     def __init__(self, parent=None):
-        super(Registration, self).__init__(parent)
+        super().__init__(parent)
         self.parent = parent
         self.initUI()
 
@@ -204,23 +210,34 @@ class Registration(QMainWindow):
             "background-color : lightblue;"
             "}"
         )
-
-        self.username.editingFinished.connect(self.registration_account)
-        self.password.editingFinished.connect(self.registration_account)
+        self.nickname_exists = QLabel("<html><head/><body><p><span style=\" font-size:9pt; color:#ff0000;\">"
+                                      "Пользователь с таким никнеймом уже существует</span></p></body></html>", self)
+        self.nickname_exists.setGeometry(200, 360, 371, 31)
+        self.nickname_exists.hide()
 
     def registration_account(self):
         username = self.username.text()
         password = self.password.text()
         if username and password:
-            db.set_person(username, password)
-            self.open_main_window()
+            if db.name_exists(username):
+                self.nickname_exists.show()
+            else:
+                db.set_person(username, password)
+                self.open_main_window(username)
 
     def back_window_authorization(self):
         self.close()
         self.authorization = Authorization(self.parent)
         self.authorization.show()
 
-    def open_main_window(self):
+    def open_main_window(self, username):
         self.close()
+        self.parent.lbl_open_task = QLabel("<html><head/><body><p><span style=\" font-size:9pt; font-weight:600;\">"
+                                           "Открыть задачу:</span></p></body></html>", self.parent)
+        self.parent.lbl_open_task.setGeometry(20, 400, 141, 41)
+        self.parent.btn_open_task = QComboBox(self.parent)
+        self.parent.btn_open_task.setGeometry(180, 410, 201, 22)
+        self.parent.id_person = db.get_id_person(username)
+        self.parent.btn_open_task.addItems(db.get_task_names(self.parent.id_person))
+        self.parent.btn_open_task.view().setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
         self.parent.show()
-

@@ -1,12 +1,12 @@
 import sys
 from PyQt5.QtWidgets import QApplication, QMainWindow, QAction
 from PyQt5.QtWidgets import QTableWidget, QTableWidgetItem, QPushButton
-from PyQt5.QtWidgets import QAbstractScrollArea, QComboBox, QHBoxLayout
-from PyQt5.QtWidgets import QWidget, QInputDialog
+from PyQt5.QtWidgets import QAbstractScrollArea, QHBoxLayout
+from PyQt5.QtWidgets import QWidget
 from PyQt5.QtGui import QIcon, QColor
 from PyQt5.QtCore import Qt
 from authorization import Authorization
-
+from main_buttons import CreateTask
 
 if hasattr(Qt, 'AA_EnableHighDpiScaling'):
     QApplication.setAttribute(Qt.AA_EnableHighDpiScaling, True)
@@ -25,23 +25,23 @@ class MainWindow(QMainWindow):
         self.setGeometry(550, 200, 800, 700)
         self.setWindowTitle("Дневник выполнения задачи")
 
-        self.authorization = Authorization(self)
-        self.authorization.show()
+        authorization = Authorization(self)
+        authorization.show()
 
-        download_chart = QAction(QIcon("Images/chart.png"), "Скачать график", self)
-        save_data = QAction(QIcon("Images/table.png"), "Сохранить таблицу", self)
-        show_chart = QAction(QIcon("Images/chart.png"), "Показать график", self)
-        program_version = QAction(QIcon("Images/version.jpg"), "Версия программы", self)
+        self.download_chart = QAction(QIcon("Images/chart.png"), "Скачать график", self)
+        self.save_data = QAction(QIcon("Images/table.png"), "Сохранить таблицу", self)
+        self.show_chart = QAction(QIcon("Images/chart.png"), "Показать график", self)
+        self.program_version = QAction(QIcon("Images/version.jpg"), "Версия программы", self)
 
-        menu = self.menuBar()
-        file_menu = menu.addMenu("Файл")
-        data_menu = menu.addMenu("Данные")
-        about_program_menu = menu.addMenu("О программе")
+        self.menu = self.menuBar()
+        self.file_menu = self.menu.addMenu("Файл")
+        self.data_menu = self.menu.addMenu("Данные")
+        self.about_program_menu = self.menu.addMenu("О программе")
 
-        file_menu.addAction(download_chart)
-        data_menu.addAction(save_data)
-        data_menu.addAction(show_chart)
-        about_program_menu.addAction(program_version)
+        self.file_menu.addAction(self.download_chart)
+        self.data_menu.addAction(self.save_data)
+        self.data_menu.addAction(self.show_chart)
+        self.about_program_menu.addAction(self.program_version)
 
         self.table = QTableWidget(self)
         self.table.setGeometry(10, 75, 771, 301)
@@ -50,36 +50,30 @@ class MainWindow(QMainWindow):
         self.table.setSizeAdjustPolicy(QAbstractScrollArea.AdjustToContents)
         self.table.horizontalHeader().setStretchLastSection(True)
 
-        default_task_value = QTableWidgetItem("Результат")
-        default_result_value = QTableWidgetItem("Дата")
-        default_date_value = QTableWidgetItem("Оценка результата")
-        default_comment_value = QTableWidgetItem("Комментарий к результату")
+        self.result_value = QTableWidgetItem("Результат")
+        self.date_value = QTableWidgetItem("Дата")
+        self.score_value = QTableWidgetItem("Оценка результата")
+        self.comment_value = QTableWidgetItem("Комментарий к результату")
 
-        self.table.setHorizontalHeaderItem(0, default_task_value)
-        self.table.setHorizontalHeaderItem(1, default_result_value)
-        self.table.setHorizontalHeaderItem(2, default_date_value)
-        self.table.setHorizontalHeaderItem(3, default_comment_value)
+        self.table.setHorizontalHeaderItem(0, self.result_value)
+        self.table.setHorizontalHeaderItem(1, self.date_value)
+        self.table.setHorizontalHeaderItem(2, self.score_value)
+        self.table.setHorizontalHeaderItem(3, self.comment_value)
 
-        default_task_value.setForeground(QColor(249, 159, 100))
-        default_result_value.setForeground(QColor(249, 159, 100))
-        default_date_value.setForeground(QColor(249, 159, 100))
-        default_comment_value.setForeground(QColor(249, 159, 100))
+        self.result_value.setForeground(QColor(249, 159, 100))
+        self.date_value.setForeground(QColor(249, 159, 100))
+        self.score_value.setForeground(QColor(249, 159, 100))
+        self.comment_value.setForeground(QColor(249, 159, 100))
 
         self.horizontalLayoutWidget = QWidget(self)
         self.horizontalLayoutWidget.setGeometry(10, 10, 771, 80)
         self.horizontalLayout = QHBoxLayout(self.horizontalLayoutWidget)
         self.horizontalLayout.setContentsMargins(0, 0, 0, 0)
 
-        self.btn_open_task = QComboBox(self.horizontalLayoutWidget)
-        self.btn_open_task.addItem("Открыть задачу")
-        self.btn_open_task.view().setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
-        self.btn_open_task.setGeometry(10, 40, 131, 31)
-        self.horizontalLayout.addWidget(self.btn_open_task)
-
-        self.btn_new_task = QPushButton("Новая задача", self.horizontalLayoutWidget)
-        self.btn_new_task.setGeometry(160, 40, 131, 31)
-        self.horizontalLayout.addWidget(self.btn_new_task)
-        self.btn_new_task.clicked.connect(self.new_task)
+        self.btn_create_task = QPushButton("Создать задачу", self.horizontalLayoutWidget)
+        self.btn_create_task.setGeometry(160, 40, 131, 31)
+        self.horizontalLayout.addWidget(self.btn_create_task)
+        self.btn_create_task.clicked.connect(self.create_new_task)
 
         self.btn_new_entry = QPushButton("Добавить запись", self.horizontalLayoutWidget)
         self.btn_new_entry.setGeometry(310, 40, 131, 31)
@@ -90,14 +84,13 @@ class MainWindow(QMainWindow):
         self.horizontalLayout.addWidget(self.btn_delete_entry)
 
         light_blue_color = "QPushButton""{""background-color : lightblue;""}"
-        self.btn_new_task.setStyleSheet(light_blue_color)
+        self.btn_create_task.setStyleSheet(light_blue_color)
         self.btn_new_entry.setStyleSheet(light_blue_color)
         self.btn_delete_entry.setStyleSheet(light_blue_color)
 
-    def new_task(self):
-        name_task, ok_pressed = QInputDialog.getText(self, "Новая задача", "Введите название задачи:")
-        if ok_pressed:
-            print(name_task)
+    def create_new_task(self):
+        new_task = CreateTask(self, self.id_person)
+        new_task.show()
 
 
 if __name__ == '__main__':
