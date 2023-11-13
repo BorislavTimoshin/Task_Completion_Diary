@@ -15,7 +15,7 @@ class WarningDialogWindow:
     def len_title_result_more_15():
         msg = QMessageBox()
         msg.setIcon(QMessageBox.Critical)
-        msg.setText("Длина названия результата должна быть не более 10 символов")
+        msg.setText("Длина названия результата должна быть не более 15 символов")
         msg.setWindowTitle("Ошибка в названии результата")
         msg.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
         msg.exec()

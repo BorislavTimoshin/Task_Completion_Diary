@@ -22,9 +22,9 @@ class Authorization(QMainWindow):
         self.image_authorization.resize(320, 320)
         self.image_authorization.setPixmap(self.pixmap_authorization)
 
-        self.main_title = QLabel('<html><head/><body><p><span style=\" font-size:16pt; font-weight:600;\">'
-                                 'Дневник выполнения задачи</span></p></body></html>', self)
-        self.main_title.setGeometry(170, 30, 420, 50)
+        self.main_title = QLabel("<html><head/><body><p><span style=\" font-size:16pt; font-weight:600;\">"
+                                 "Дневник выполнения спортивных задач</span></p></body></html>", self)
+        self.main_title.setGeometry(70, 40, 581, 41)
 
         self.title_authorization = QLabel('<html><head/><body><p><span style=" font-size:13pt; font-weight:600;">'
                                           'Авторизация аккаунта</span></p></body></html>', self)
@@ -80,9 +80,9 @@ class Login(QMainWindow):
         self.image_authorization.resize(320, 320)
         self.image_authorization.setPixmap(self.pixmap_authorization)
 
-        self.main_title = QLabel('<html><head/><body><p><span style=\" font-size:16pt; font-weight:600;\">'
-                                 'Дневник выполнения задачи</span></p></body></html>', self)
-        self.main_title.setGeometry(170, 30, 420, 50)
+        self.main_title = QLabel("<html><head/><body><p><span style=\" font-size:16pt; font-weight:600;\">"
+                                 "Дневник выполнения спортивных задач</span></p></body></html>", self)
+        self.main_title.setGeometry(70, 40, 581, 41)
 
         self.title_authorization = QLabel('<html><head/><body><p><span style=" font-size:13pt; font-weight:600;">'
                                           'Авторизация аккаунта</span></p></body></html>', self)
@@ -150,6 +150,7 @@ class Login(QMainWindow):
         self.parent.id_person = db.get_id_person(username)
         self.parent.btn_open_task.addItems(db.get_task_names(self.parent.id_person))
         self.parent.btn_open_task.view().setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+        self.parent.btn_open_task.view().pressed.connect(self.parent.open_task)
         self.parent.show()
 
 
@@ -170,9 +171,9 @@ class Registration(QMainWindow):
         self.image_authorization.resize(320, 320)
         self.image_authorization.setPixmap(self.pixmap_authorization)
 
-        self.main_title = QLabel('<html><head/><body><p><span style=\" font-size:16pt; font-weight:600;\">'
-                                 'Дневник выполнения задачи</span></p></body></html>', self)
-        self.main_title.setGeometry(170, 30, 420, 50)
+        self.main_title = QLabel("<html><head/><body><p><span style=\" font-size:16pt; font-weight:600;\">"
+                                 "Дневник выполнения спортивных задач</span></p></body></html>", self)
+        self.main_title.setGeometry(70, 40, 581, 41)
 
         self.title_authorization = QLabel('<html><head/><body><p><span style=" font-size:13pt; font-weight:600;">'
                                           'Регистрация аккаунта</span></p></body></html>', self)

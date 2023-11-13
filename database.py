@@ -1,5 +1,4 @@
 import sqlite3
-import json
 
 
 # Класс для работы с базой данных
@@ -54,7 +53,25 @@ class Database:
             for i in result:
                 return eval(i[0])
 
-    def set_new_task(self, id_person, task_name, result_name, measurement):  # FIXME
+    def get_result_names(self, id_person):
+        with self.connection:
+            result = self.cursor.execute(
+                "SELECT `result_names` FROM `Tasks` WHERE `id` = ?",
+                (id_person,)
+            ).fetchall()
+            for i in result:
+                return eval(i[0])
+
+    def get_measurementes(self, id_person):
+        with self.connection:
+            result = self.cursor.execute(
+                "SELECT `measurement` FROM `Tasks` WHERE `id` = ?",
+                (id_person,)
+            ).fetchall()
+            for i in result:
+                return eval(i[0])
+
+    def set_new_task(self, id_person, task_name, result_name, measurement):
         with self.connection:
             task_names = self.get_task_names(id_person)
             if "Задача не создана" in task_names:
@@ -63,13 +80,15 @@ class Database:
                 "UPDATE `Tasks` SET `task_names` = ? WHERE `id` = ?",
                 (str(task_names + [task_name]), id_person,)
             )
+            result_names = self.get_result_names(id_person)
             self.cursor.execute(
                 "UPDATE `Tasks` SET `result_names` = ? WHERE `id` = ?",
-                (result_name, id_person,)
+                (str(result_names + [result_name]), id_person,)
             )
+            measurementes = self.get_measurementes(id_person)
             self.cursor.execute(
                 "UPDATE `Tasks` SET `measurement` = ? WHERE `id` = ?",
-                (measurement, id_person,)
+                (str(measurementes + [measurement]), id_person,)
             )
             self.connection.commit()
 

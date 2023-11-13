@@ -1,12 +1,12 @@
 import sys
 from PyQt5.QtWidgets import QApplication, QMainWindow, QAction
 from PyQt5.QtWidgets import QTableWidget, QTableWidgetItem, QPushButton
-from PyQt5.QtWidgets import QAbstractScrollArea, QHBoxLayout
-from PyQt5.QtWidgets import QWidget
+from PyQt5.QtWidgets import QAbstractScrollArea, QHBoxLayout, QWidget
 from PyQt5.QtGui import QIcon, QColor
 from PyQt5.QtCore import Qt
 from authorization import Authorization
 from main_buttons import CreateTask
+from database import db
 
 if hasattr(Qt, 'AA_EnableHighDpiScaling'):
     QApplication.setAttribute(Qt.AA_EnableHighDpiScaling, True)
@@ -23,7 +23,7 @@ class MainWindow(QMainWindow):
 
     def initUI(self):
         self.setGeometry(550, 200, 800, 700)
-        self.setWindowTitle("Дневник выполнения задачи")
+        self.setWindowTitle("Дневник выполнения спортивных задач")
 
         authorization = Authorization(self)
         authorization.show()
@@ -91,6 +91,15 @@ class MainWindow(QMainWindow):
     def create_new_task(self):
         new_task = CreateTask(self, self.id_person)
         new_task.show()
+
+    def open_task(self, index):
+        task = self.btn_open_task.model().itemFromIndex(index).text()
+        task_names = db.get_task_names(self.id_person)
+        index_task = task_names.index(task)
+        result_name = db.get_result_names(self.id_person)[index_task]
+        self.result_value.setText(result_name)
+        self.table.setHorizontalHeaderItem(0, self.result_value)
+        self.result_value.setForeground(QColor(249, 159, 100))
 
 
 if __name__ == '__main__':

@@ -20,12 +20,12 @@ class CreateTask(QDialog):
 
         self.title_name_task = "Название задачи (не более 20 символов)"
         self.name_task = QLineEdit(self)
-        self.name_task.setPlaceholderText("Например, экзамен")
+        self.name_task.setPlaceholderText("Например, бег по утрам")
         form_layout.addRow(self.title_name_task, self.name_task)
 
-        self.title_name_result = "Название результата (не более 10 символов)"
+        self.title_name_result = "Название результата (не более 15 символов)"
         self.name_result = QLineEdit(self)
-        self.name_result.setPlaceholderText("Например, оценка")
+        self.name_result.setPlaceholderText("Например, дальность (км)")
         form_layout.addRow(self.title_name_result, self.name_result)
 
         self.title_unit_of_measurement = "Единица измерения результата"
@@ -43,7 +43,7 @@ class CreateTask(QDialog):
         measurement = self.unit_of_measurement.currentText()
         if task_name and result_name:
             if len(task_name) <= 20:
-                if len(result_name) <= 10:
+                if len(result_name) <= 15:
                     task_names = db.get_task_names(self.id_person)
                     if task_name in task_names:
                         warning_dialog_window.task_exists()
