@@ -92,5 +92,50 @@ class Database:
             )
             self.connection.commit()
 
+    def get_dates(self, id_person):
+        with self.connection:
+            result = self.cursor.execute(
+                "SELECT `dates` FROM `Tasks` WHERE `id` = ?",
+                (id_person,)
+            )
+            for i in result:
+                return eval(i[0])
+
+    def get_results_in_form_date(self, id_person):
+        with self.connection:
+            result = self.cursor.execute(
+                "SELECT `results_in_form_date` FROM `Tasks` WHERE `id` = ?",
+                (id_person,)
+            )
+            for i in result:
+                return eval(i[0])
+
+    def get_results_in_form_int_number(self, id_person):
+        with self.connection:
+            result = self.cursor.execute(
+                "SELECT `results_in_form_int_number` FROM `Tasks` WHERE `id` = ?",
+                (id_person,)
+            )
+            for i in result:
+                return eval(i[0])
+
+    def get_results_in_form_float_number(self, id_person):
+        with self.connection:
+            result = self.cursor.execute(
+                "SELECT `results_in_form_float_number` FROM `Tasks` WHERE `id` = ?",
+                (id_person,)
+            )
+            for i in result:
+                return eval(i[0])
+
+    def get_results_in_form_text(self, id_person):
+        with self.connection:
+            result = self.cursor.execute(
+                "SELECT `results_in_form_text` FROM `Tasks` WHERE `id` = ?",
+                (id_person,)
+            )
+            for i in result:
+                return eval(i[0])
+
 
 db = Database("database.sqlite")  # Экземпляр класса Database для работы с бд

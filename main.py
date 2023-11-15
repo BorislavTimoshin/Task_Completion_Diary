@@ -5,7 +5,7 @@ from PyQt5.QtWidgets import QAbstractScrollArea, QHBoxLayout, QWidget
 from PyQt5.QtGui import QIcon, QColor
 from PyQt5.QtCore import Qt
 from authorization import Authorization
-from main_buttons import CreateTask
+from main_buttons import CreateTask, AddEntry
 from database import db
 
 if hasattr(Qt, 'AA_EnableHighDpiScaling'):
@@ -43,28 +43,6 @@ class MainWindow(QMainWindow):
         self.data_menu.addAction(self.show_chart)
         self.about_program_menu.addAction(self.program_version)
 
-        self.table = QTableWidget(self)
-        self.table.setGeometry(10, 75, 771, 301)
-        self.table.setColumnCount(4)
-        self.table.setRowCount(1)
-        self.table.setSizeAdjustPolicy(QAbstractScrollArea.AdjustToContents)
-        self.table.horizontalHeader().setStretchLastSection(True)
-
-        self.result_value = QTableWidgetItem("Результат")
-        self.date_value = QTableWidgetItem("Дата")
-        self.score_value = QTableWidgetItem("Оценка результата")
-        self.comment_value = QTableWidgetItem("Комментарий к результату")
-
-        self.table.setHorizontalHeaderItem(0, self.result_value)
-        self.table.setHorizontalHeaderItem(1, self.date_value)
-        self.table.setHorizontalHeaderItem(2, self.score_value)
-        self.table.setHorizontalHeaderItem(3, self.comment_value)
-
-        self.result_value.setForeground(QColor(249, 159, 100))
-        self.date_value.setForeground(QColor(249, 159, 100))
-        self.score_value.setForeground(QColor(249, 159, 100))
-        self.comment_value.setForeground(QColor(249, 159, 100))
-
         self.horizontalLayoutWidget = QWidget(self)
         self.horizontalLayoutWidget.setGeometry(10, 10, 771, 80)
         self.horizontalLayout = QHBoxLayout(self.horizontalLayoutWidget)
@@ -78,6 +56,7 @@ class MainWindow(QMainWindow):
         self.btn_new_entry = QPushButton("Добавить запись", self.horizontalLayoutWidget)
         self.btn_new_entry.setGeometry(310, 40, 131, 31)
         self.horizontalLayout.addWidget(self.btn_new_entry)
+        self.btn_new_entry.clicked.connect(self.add_entry_to_table)
 
         self.btn_delete_entry = QPushButton("Удалить запись", self.horizontalLayoutWidget)
         self.btn_delete_entry.setGeometry(460, 40, 141, 31)
@@ -91,6 +70,10 @@ class MainWindow(QMainWindow):
     def create_new_task(self):
         new_task = CreateTask(self, self.id_person)
         new_task.show()
+
+    def add_entry_to_table(self):
+        add_entry = AddEntry(self, self.id_person)
+        add_entry.show()
 
     def open_task(self, index):
         task = self.btn_open_task.model().itemFromIndex(index).text()
