@@ -93,8 +93,10 @@ class MainWindow(QMainWindow):
         self.table.setHorizontalHeaderItem(2, self.mark_value)
         self.table.setHorizontalHeaderItem(3, self.comment_value)
 
-        stylesheet = "::section{Background-color:#FFC973}"
-        self.table.horizontalHeader().setStyleSheet(stylesheet)
+        stylesheet1 = "::section{Background-color:#FFC973}"
+        self.table.horizontalHeader().setStyleSheet(stylesheet1)
+        stylesheet = "::section{Background-color:#E6E6FA}"
+        self.table.verticalHeader().setStyleSheet(stylesheet)
 
         self.fill_table()
 
@@ -123,21 +125,22 @@ class MainWindow(QMainWindow):
     def fill_table(self, task=None):
         if task is None:
             task = self.btn_open_task.currentText()
-        task_names = db.get_task_names(self.id_person)
-        index_task = task_names.index(task)
-        row = 0
-        results = db.get_results(self.id_person)[index_task]
-        dates = db.get_dates(self.id_person)[index_task]
-        marks = db.get_marks(self.id_person)[index_task]
-        comments = db.get_comments(self.id_person)[index_task]
-        self.table.setRowCount(len(results))
+        if task:
+            task_names = db.get_task_names(self.id_person)
+            index_task = task_names.index(task)
+            row = 0
+            results = db.get_results(self.id_person)[index_task]
+            dates = db.get_dates(self.id_person)[index_task]
+            marks = db.get_marks(self.id_person)[index_task]
+            comments = db.get_comments(self.id_person)[index_task]
+            self.table.setRowCount(len(results))
 
-        for result, date, mark, comment in zip(results, dates, marks, comments):
-            self.table.setItem(row, 0, QTableWidgetItem(str(result)))
-            self.table.setItem(row, 1, QTableWidgetItem(str(date.date())))
-            self.table.setItem(row, 2, QTableWidgetItem(mark))
-            self.table.setItem(row, 3, QTableWidgetItem(comment))
-            row += 1
+            for result, date, mark, comment in zip(results, dates, marks, comments):
+                self.table.setItem(row, 0, QTableWidgetItem(str(result)))
+                self.table.setItem(row, 1, QTableWidgetItem(str(date.date())))
+                self.table.setItem(row, 2, QTableWidgetItem(mark))
+                self.table.setItem(row, 3, QTableWidgetItem(comment))
+                row += 1
 
     def open_task(self, index):
         task = self.btn_open_task.model().itemFromIndex(index).text()

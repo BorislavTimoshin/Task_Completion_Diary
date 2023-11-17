@@ -1,7 +1,7 @@
-from PyQt5.QtWidgets import QLineEdit, QDialogButtonBox, QFormLayout
-from PyQt5.QtWidgets import QDialog, QComboBox, QLabel
-from PyQt5.QtWidgets import QWidget, QCalendarWidget
-from PyQt5.QtWidgets import QVBoxLayout, QTimeEdit, QTableWidgetItem
+from PyQt5.QtWidgets import QLineEdit, QTimeEdit, QComboBox
+from PyQt5.QtWidgets import QDialog, QDialogButtonBox, QLabel
+from PyQt5.QtWidgets import QWidget, QCalendarWidget, QTableWidgetItem
+from PyQt5.QtWidgets import QVBoxLayout, QFormLayout
 from datetime import datetime
 from warnings_dialog_window import warning_dialog_window
 from database import db
@@ -248,6 +248,9 @@ class AddEntry(QDialog):
         date = self.get_date()
         mark = self.mark.currentText()
         comment = self.comment.text()
-        if result and mark and date:
-            self.insert_in_db(result, date, mark, comment)
-            self.close()
+        if len(comment) <= 45:
+            if result and mark and date:
+                self.insert_in_db(result, date, mark, comment)
+                self.close()
+        else:
+            warning_dialog_window.len_comment_more_45()
