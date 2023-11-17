@@ -220,7 +220,8 @@ class AddEntry(QDialog):
         self.table.setRowCount(len(results[index_task]))
         row = 0
 
-        for result, date, mark, comment in zip(results[index_task], dates[index_task], marks[index_task], comments[index_task]):
+        for result, date, mark, comment in zip(results[index_task], dates[index_task], marks[index_task],
+                                               comments[index_task]):
             self.table.setItem(row, 0, QTableWidgetItem(str(result)))
             self.table.setItem(row, 1, QTableWidgetItem(str(date.date())))
             self.table.setItem(row, 2, QTableWidgetItem(mark))

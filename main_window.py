@@ -129,7 +129,7 @@ class MainWindow(QMainWindow):
         results = db.get_results(self.id_person)[index_task]
         dates = db.get_dates(self.id_person)[index_task]
         marks = db.get_marks(self.id_person)[index_task]
-        comments = db.get_marks(self.id_person)[index_task]
+        comments = db.get_comments(self.id_person)[index_task]
         self.table.setRowCount(len(results))
 
         for result, date, mark, comment in zip(results, dates, marks, comments):
