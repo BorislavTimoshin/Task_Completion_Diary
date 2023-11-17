@@ -1,16 +1,13 @@
-from PyQt5.QtWidgets import QLineEdit, QPushButton, QLabel, QTableWidgetItem, QTableWidget, QAbstractScrollArea, \
-    QHeaderView
-from PyQt5.QtWidgets import QMainWindow, QComboBox
-from PyQt5.QtGui import QPixmap, QColor
-from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QMainWindow, QLineEdit, QPushButton, QLabel
+from PyQt5.QtGui import QPixmap
 from database import db
+from main_window import MainWindow
 
 
 # Класс для работы с окном: авторизация пользователя
 class Authorization(QMainWindow):
-    def __init__(self, parent=None):
-        super().__init__(parent)
-        self.parent = parent
+    def __init__(self):
+        super().__init__()
         self.initUI()
 
     def initUI(self):
@@ -55,20 +52,19 @@ class Authorization(QMainWindow):
 
     def open_login_window(self):
         self.close()
-        self.login = Login(self.parent)
+        self.login = Login()
         self.login.show()
 
     def open_registration_window(self):
         self.close()
-        self.registration = Registration(self.parent)
+        self.registration = Registration()
         self.registration.show()
 
 
 # Класс для работы с окном: вход пользователя в аккаунт
 class Login(QMainWindow):
-    def __init__(self, parent=None):
-        super().__init__(parent)
-        self.parent = parent
+    def __init__(self):
+        super().__init__()
         self.initUI()
 
     def initUI(self):
@@ -138,56 +134,20 @@ class Login(QMainWindow):
 
     def back_window_authorization(self):
         self.close()
-        self.authorization = Authorization(self.parent)
+        self.authorization = Authorization()
         self.authorization.show()
 
     def open_main_window(self, username):
         self.close()
-        self.parent.lbl_open_task = QLabel("<html><head/><body><p><span style=\" font-size:9pt; font-weight:600;\">"
-                                           "Открыть задачу:</span></p></body></html>", self.parent)
-        self.parent.lbl_open_task.setGeometry(20, 400, 141, 41)
-
-        self.parent.btn_open_task = QComboBox(self.parent)
-        self.parent.btn_open_task.setGeometry(180, 410, 201, 22)
-        self.parent.id_person = db.get_id_person(username)
-        self.parent.btn_open_task.addItems(db.get_task_names(self.parent.id_person))
-        self.parent.btn_open_task.view().setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
-        self.parent.btn_open_task.view().pressed.connect(self.parent.open_task)
-
-        self.parent.table = QTableWidget(self.parent)
-        self.parent.table.setGeometry(10, 75, 771, 301)
-        self.parent.table.setColumnCount(4)
-        self.parent.table.setRowCount(1)
-        self.parent.table.setSizeAdjustPolicy(QAbstractScrollArea.AdjustToContents)
-        self.parent.table.horizontalHeader().setStretchLastSection(True)
-
-        self.parent.date_value = QTableWidgetItem("Дата")
-        self.parent.score_value = QTableWidgetItem("Оценка\nрезультата")
-        self.parent.comment_value = QTableWidgetItem("Комментарий к результату")
-
-        self.parent.table.setHorizontalHeaderItem(1, self.parent.date_value)
-        self.parent.table.setHorizontalHeaderItem(2, self.parent.score_value)
-        self.parent.table.setHorizontalHeaderItem(3, self.parent.comment_value)
-        current_task = self.parent.btn_open_task.currentText()
-        task_names = db.get_task_names(self.parent.id_person)
-        result_names = db.get_result_names(self.parent.id_person)
-        index_current_task = task_names.index(current_task)
-        self.parent.result_value = QTableWidgetItem(result_names[index_current_task])
-        self.parent.table.setHorizontalHeaderItem(0, self.parent.result_value)
-        self.parent.result_value.setForeground(QColor(249, 159, 100))
-
-        self.parent.date_value.setForeground(QColor(249, 159, 100))
-        self.parent.score_value.setForeground(QColor(249, 159, 100))
-        self.parent.comment_value.setForeground(QColor(249, 159, 100))
-
-        self.parent.show()
+        self.id_person = db.get_id_person(username)
+        self.ex = MainWindow(self.id_person)
+        self.ex.show()
 
 
 # Класс для работы с окном: регистрация пользователя
 class Registration(QMainWindow):
-    def __init__(self, parent=None):
-        super().__init__(parent)
-        self.parent = parent
+    def __init__(self):
+        super().__init__()
         self.initUI()
 
     def initUI(self):
@@ -253,50 +213,20 @@ class Registration(QMainWindow):
                 self.nickname_exists.show()
             else:
                 db.set_person(username, password)
-                self.open_main_window(username)
+                self.open_main_window(username, password)
 
     def back_window_authorization(self):
         self.close()
-        self.authorization = Authorization(self.parent)
+        self.authorization = Authorization()
         self.authorization.show()
 
-    def open_main_window(self, username):
-        self.close()
-        self.parent.lbl_open_task = QLabel("<html><head/><body><p><span style=\" font-size:9pt; font-weight:600;\">"
-                                           "Открыть задачу:</span></p></body></html>", self.parent)
-        self.parent.lbl_open_task.setGeometry(20, 400, 141, 41)
-
-        self.parent.btn_open_task = QComboBox(self.parent)
-        self.parent.btn_open_task.setGeometry(180, 410, 201, 22)
-        self.parent.id_person = db.get_id_person(username)
-        self.parent.btn_open_task.addItems(db.get_task_names(self.parent.id_person))
-        self.parent.btn_open_task.view().setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
-        self.parent.btn_open_task.view().pressed.connect(self.parent.open_task)
-
-        self.parent.table = QTableWidget(self.parent)
-        self.parent.table.setGeometry(10, 75, 771, 301)
-        self.parent.table.setColumnCount(4)
-        self.parent.table.setRowCount(1)
-        self.parent.table.setSizeAdjustPolicy(QAbstractScrollArea.AdjustToContents)
-        self.parent.table.horizontalHeader().setStretchLastSection(True)
-
-        self.parent.date_value = QTableWidgetItem("Дата")
-        self.parent.score_value = QTableWidgetItem("Оценка\nрезультата")
-        self.parent.comment_value = QTableWidgetItem("Комментарий к результату")
-
-        self.parent.table.setHorizontalHeaderItem(1, self.parent.date_value)
-        self.parent.table.setHorizontalHeaderItem(2, self.parent.score_value)
-        self.parent.table.setHorizontalHeaderItem(3, self.parent.comment_value)
-        current_task = self.parent.btn_open_task.currentText()
-        task_names = db.get_task_names(self.parent.id_person)
-        result_names = db.get_result_names(self.parent.id_person)
-        index_current_task = task_names.index(current_task)
-        self.parent.result_value = QTableWidgetItem(result_names[index_current_task])
-        self.parent.table.setHorizontalHeaderItem(0, self.parent.result_value)
-        self.parent.result_value.setForeground(QColor(249, 159, 100))
-
-        self.parent.date_value.setForeground(QColor(249, 159, 100))
-        self.parent.score_value.setForeground(QColor(249, 159, 100))
-        self.parent.comment_value.setForeground(QColor(249, 159, 100))
-
-        self.parent.show()
+    def open_main_window(self, username, password):
+        self.id_person = db.get_id_person(username)
+        self.ex = MainWindow(self.id_person)
+        self.ex.create_new_task(
+            is_login_account=True,
+            ex_main_window=self.ex,
+            parent=self,
+            username=username,
+            password=password
+        )

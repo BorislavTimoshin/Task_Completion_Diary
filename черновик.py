@@ -1,5 +1,20 @@
-from bisect import bisect_left
+numbers = [10, 9, 8, 7, 4, 2, 1]
+item = 12
+end = len(numbers)
+start = 0
 
-h = [10, 8, 7, 5, 4, 3, 2, 1]
-num = 6
-print(bisect_left(h[::-1], num))
+while start < end:
+    mid = (start + end) // 2
+    if numbers[mid] > item:
+        start = mid + 1
+    else:
+        end = mid
+
+print(start)
+numbers.insert(start, item)
+print(numbers)
+
+from PyQt5.QtCore import QTime
+
+print(QTime(12, 22, 34) > QTime(10, 3, 10))
+

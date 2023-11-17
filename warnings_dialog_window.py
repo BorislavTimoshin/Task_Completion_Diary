@@ -29,5 +29,14 @@ class WarningDialogWindow:
         msg.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
         msg.exec()
 
+    @staticmethod
+    def is_not_number():
+        msg = QMessageBox()
+        msg.setIcon(QMessageBox.Critical)
+        msg.setText("Введенное значение не является числом")
+        msg.setWindowTitle("Ошибка в указании результата")
+        msg.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
+        msg.exec()
+
 
 warning_dialog_window = WarningDialogWindow()

@@ -1,19 +1,26 @@
-from PyQt5.QtGui import QColor
-from PyQt5.QtWidgets import QLineEdit, QDialogButtonBox, QFormLayout, QTextEdit
+from PyQt5.QtWidgets import QLineEdit, QDialogButtonBox, QFormLayout
 from PyQt5.QtWidgets import QDialog, QComboBox, QLabel
-from PyQt5.QtWidgets import QPushButton, QWidget, QCalendarWidget
-from PyQt5.QtWidgets import QVBoxLayout, QTimeEdit
+from PyQt5.QtWidgets import QWidget, QCalendarWidget
+from PyQt5.QtWidgets import QVBoxLayout, QTimeEdit, QTableWidgetItem
 from datetime import datetime
-from bisect import bisect_left
 from warnings_dialog_window import warning_dialog_window
 from database import db
 
 
+# Класс для открытия окна: открыть задание
 class CreateTask(QDialog):
-    def __init__(self, parent=None, id_person=None):
+    def __init__(self, btn_open_task, result_value, table, id_person=None, is_login_account=False, ex_main_window=None,
+                 parent=None, username=None, password=None):
         super().__init__(parent)
-        self.parent = parent
+        self.btn_open_task = btn_open_task
+        self.result_value = result_value
+        self.table = table
         self.id_person = id_person
+        self.is_login_account = is_login_account
+        self.ex_main_window = ex_main_window
+        self.parent = parent
+        self.username = username
+        self.password = password
         self.initUI()
 
     def initUI(self):
@@ -29,19 +36,20 @@ class CreateTask(QDialog):
 
         self.title_name_result = "Название результата (не более 15 символов)"
         self.name_result = QLineEdit(self)
-        self.name_result.setPlaceholderText("Например, дальность (км)")
+        self.name_result.setPlaceholderText("Например, дальность")
         form_layout.addRow(self.title_name_result, self.name_result)
 
         self.title_unit_of_measurement = "Единица измерения результата"
         self.unit_of_measurement = QComboBox(self)
-        self.unit_of_measurement.addItems(["Целое число", "Дробное число", "Время", "Текст"])
+        self.unit_of_measurement.addItems(["Число", "м", "км", "м/с", "км/ч", "Время"])
         form_layout.addRow(self.title_unit_of_measurement, self.unit_of_measurement)
 
         form_layout.addWidget(buttons_new_task)
-        buttons_new_task.accepted.connect(self.accept)
-        buttons_new_task.rejected.connect(self.reject)
+        buttons_new_task.accepted.connect(self.ok)
+        buttons_new_task.rejected.connect(self.cancel)
 
-    def accept(self):
+    def ok(self):
+        """ Метод для обработки создания задания """
         task_name = self.name_task.text()
         result_name = self.name_result.text()
         measurement = self.unit_of_measurement.currentText()
@@ -49,33 +57,49 @@ class CreateTask(QDialog):
             if len(task_name) <= 20:
                 if len(result_name) <= 15:
                     task_names = db.get_task_names(self.id_person)
-                    result_names = db.get_result_names(self.id_person)
                     if task_name in task_names:
                         warning_dialog_window.task_exists()
                     else:
-                        # FIXME
-                        if self.parent.btn_open_task.itemText(0) == "Задача не создана":
-                            task_names.remove("Задача не создана")
-                            self.parent.btn_open_task.removeItem(0)
-                        if result_names[0] == "Результат":
-                            del result_names[0]
                         db.set_new_task(self.id_person, task_name, result_name, measurement)
-                        self.close()
-                        self.parent.btn_open_task.addItem(task_name)
-                        self.parent.btn_open_task.setCurrentText(task_name)
-                        self.parent.result_value.setText(result_name)
-                        self.parent.table.setHorizontalHeaderItem(0, self.parent.result_value)
-                        self.parent.result_value.setForeground(QColor(249, 159, 100))
+                        self.reject()
+                        self.btn_open_task.addItem(task_name)
+                        self.btn_open_task.setCurrentText(task_name)
+                        self.result_value.setText(result_name)
+                        results = db.get_results(self.id_person)
+                        dates = db.get_dates(self.id_person)
+                        marks = db.get_marks(self.id_person)
+                        comments = db.get_comments(self.id_person)
+                        db.set_results(self.id_person, results + [[]])
+                        db.set_dates(self.id_person, dates + [[]])
+                        db.set_marks(self.id_person, marks + [[]])
+                        db.set_comments(self.id_person, comments + [[]])
+                        self.table.setHorizontalHeaderItem(0, self.result_value)
+                        self.table.setRowCount(0)
+                        if self.is_login_account:
+                            self.parent.close()
+                            self.ex_main_window.show()
                 else:
                     warning_dialog_window.len_title_result_more_15()
             else:
                 warning_dialog_window.len_task_more_15()
 
+    def cancel(self):
+        self.reject()
+        if self.is_login_account:
+            db.delete_person(self.id_person)
 
+    def closeEvent(self, event):
+        event.accept()
+        if self.is_login_account:
+            db.delete_person(self.id_person)
+
+
+# Класс для открытия окна: добавить запись в таблицу
 class AddEntry(QDialog):
-    def __init__(self, parent=None, id_person=None):
-        super().__init__(parent)
-        self.parent = parent
+    def __init__(self, btn_open_task, table, id_person=None):
+        super().__init__()
+        self.btn_open_task = btn_open_task
+        self.table = table
         self.id_person = id_person
         self.initUI()
 
@@ -89,16 +113,27 @@ class AddEntry(QDialog):
                                    f"Укажите {self.get_result_name()}:</span></p></body></html>", self)
         self.title_result.setGeometry(10, 0, 331, 31)
 
-        self.result = QLineEdit(self)
-        self.result.setGeometry(10, 40, 261, 31)
+        self.result_in_form_int = QLineEdit(self)
+        self.result_in_form_int.setGeometry(10, 40, 261, 31)
+        self.result_in_form_int.hide()
 
-        self.title_score = QLabel("<html><head/><body><p><span style=\" font-size:10pt; font-weight:600;\">"
-                                  "Укажите оценку результата</span></p></body></html>", self)
-        self.title_score.setGeometry(10, 90, 271, 31)
+        self.result_in_form_time = QTimeEdit(self)
+        self.result_in_form_time.setDisplayFormat("hh:mm:ss")
+        self.result_in_form_time.setGeometry(10, 40, 261, 31)
+        self.result_in_form_time.hide()
 
-        self.score = QComboBox(self)
-        self.score.addItems(["1", "2", "3", "4", "5"])
-        self.score.setGeometry(10, 130, 261, 31)
+        if self.get_measurement() == "Время":
+            self.result_in_form_time.show()
+        else:
+            self.result_in_form_int.show()
+
+        self.title_mark = QLabel("<html><head/><body><p><span style=\" font-size:10pt; font-weight:600;\">"
+                                 "Укажите оценку результата</span></p></body></html>", self)
+        self.title_mark.setGeometry(10, 90, 271, 31)
+
+        self.mark = QComboBox(self)
+        self.mark.addItems(["1", "2", "3", "4", "5"])
+        self.mark.setGeometry(10, 130, 261, 31)
 
         self.title_comment = QLabel("<html><head/><body><p><span style=\" font-size:10pt; font-weight:600;\">"
                                     "Напишите комментарий к результату (По желанию). "
@@ -131,6 +166,34 @@ class AddEntry(QDialog):
         buttons_add_entry.accepted.connect(self.accept)
         buttons_add_entry.rejected.connect(self.reject)
 
+    def get_index_task(self):
+        task = self.btn_open_task.currentText()
+        tasks = db.get_task_names(self.id_person)
+        return tasks.index(task)
+
+    def get_result_name(self):
+        result_names = db.get_result_names(self.id_person)
+        index_result = self.get_index_task()
+        return result_names[index_result]
+
+    def get_measurement(self):
+        measurements = db.get_measurementes(self.id_person)
+        index_measurement = self.get_index_task()
+        return measurements[index_measurement]
+
+    def get_index_insertion(self, date, dates):
+        index_task = self.get_index_task()
+        dates = dates[index_task]
+        start = 0
+        end = len(dates)
+        while start < end:
+            mid = (start + end) // 2
+            if dates[mid] > date:
+                start = mid + 1
+            else:
+                end = mid
+        return start
+
     def get_date(self):
         date = datetime(
             year=self.calendarWidget.selectedDate().year(),
@@ -141,35 +204,49 @@ class AddEntry(QDialog):
         )
         return date
 
-    def get_result_name(self):
-        result_names = db.get_result_names(self.id_person)
-        index_result = self.get_index_task()
-        result_name = result_names[index_result]
-        return result_name
-
-    def get_index_task(self):
-        task = self.parent.btn_open_task.currentText()
-        tasks = db.get_task_names(self.id_person)
-        return tasks.index(task)
-
-    def get_index_insert(self):
+    def insert_in_db(self, result, date, mark, comment):
+        results = db.get_results(self.id_person)
         dates = db.get_dates(self.id_person)
-        index_insert = bisect_left(dates, self.get_date())
-        return index_insert
+        marks = db.get_marks(self.id_person)
+        comments = db.get_comments(self.id_person)
 
-    def insert_in_db(self):
-        date = self.get_date()
-        result = None
         index_task = self.get_index_task()
-        measurement = db.get_measurementes(self.id_person)
-        if measurement == "Целое число":
-            pass
-        elif measurement == "Дробное число":
-            pass
-        elif measurement == "Время":
-            results_in_form_date = db.get_results_in_form_date(self.id_person)
-            if index_task == len(results_in_form_date):
-                results_in_form_date.append([])
+        index_insert = self.get_index_insertion(date, dates)
+
+        results[index_task].insert(index_insert, result)
+        dates[index_task].insert(index_insert, date)
+        marks[index_task].insert(index_insert, mark)
+        comments[index_task].insert(index_insert, comment)
+        self.table.setRowCount(len(results[index_task]))
+        row = 0
+
+        for result, date, mark, comment in zip(results[index_task], dates[index_task], marks[index_task], comments[index_task]):
+            self.table.setItem(row, 0, QTableWidgetItem(str(result)))
+            self.table.setItem(row, 1, QTableWidgetItem(str(date.date())))
+            self.table.setItem(row, 2, QTableWidgetItem(mark))
+            self.table.setItem(row, 3, QTableWidgetItem(comment))
+            row += 1
+
+        db.set_results(self.id_person, results)
+        db.set_dates(self.id_person, dates)
+        db.set_marks(self.id_person, marks)
+        db.set_comments(self.id_person, comments)
 
     def accept(self):
-        pass
+        measurement = self.get_measurement()
+        result = None
+        if measurement == "Время":
+            result = self.result_in_form_time.time()
+        else:
+            try:
+                result = float(self.result_in_form_int.text().replace(",", ".", 1))
+                if result.is_integer():
+                    result = int(result)
+            except ValueError:
+                warning_dialog_window.is_not_number()
+        date = self.get_date()
+        mark = self.mark.currentText()
+        comment = self.comment.text()
+        if result and mark and date:
+            self.insert_in_db(result, date, mark, comment)
+            self.close()

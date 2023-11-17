@@ -1,4 +1,5 @@
 import sqlite3
+import datetime
 
 
 # Класс для работы с базой данных
@@ -35,6 +36,17 @@ class Database:
             )
             self.connection.commit()
 
+    def delete_person(self, id_person):
+        with self.connection:
+            self.cursor.execute(
+                "DELETE FROM `Users` WHERE `id` = ?",
+                (id_person,)
+            )
+            self.cursor.execute(
+                "DELETE FROM `Tasks` WHERE `id` = ?",
+                (id_person,)
+            )
+
     def get_id_person(self, username):
         with self.connection:
             result = self.cursor.execute(
@@ -65,7 +77,7 @@ class Database:
     def get_measurementes(self, id_person):
         with self.connection:
             result = self.cursor.execute(
-                "SELECT `measurement` FROM `Tasks` WHERE `id` = ?",
+                "SELECT `measurements` FROM `Tasks` WHERE `id` = ?",
                 (id_person,)
             ).fetchall()
             for i in result:
@@ -74,8 +86,6 @@ class Database:
     def set_new_task(self, id_person, task_name, result_name, measurement):
         with self.connection:
             task_names = self.get_task_names(id_person)
-            if "Задача не создана" in task_names:
-                task_names.remove("Задача не создана")
             self.cursor.execute(
                 "UPDATE `Tasks` SET `task_names` = ? WHERE `id` = ?",
                 (str(task_names + [task_name]), id_person,)
@@ -87,10 +97,26 @@ class Database:
             )
             measurementes = self.get_measurementes(id_person)
             self.cursor.execute(
-                "UPDATE `Tasks` SET `measurement` = ? WHERE `id` = ?",
+                "UPDATE `Tasks` SET `measurements` = ? WHERE `id` = ?",
                 (str(measurementes + [measurement]), id_person,)
             )
             self.connection.commit()
+
+    def get_results(self, id_person):
+        with self.connection:
+            result = self.cursor.execute(
+                "SELECT `results` FROM `Tasks` WHERE `id` = ?",
+                (id_person,)
+            )
+            for i in result:
+                return eval(i[0])
+
+    def set_results(self, id_person, results):
+        self.cursor.execute(
+            "UPDATE `Tasks` SET `results` = ? WHERE `id` = ?",
+            (str(results), id_person,)
+        )
+        self.connection.commit()
 
     def get_dates(self, id_person):
         with self.connection:
@@ -101,41 +127,44 @@ class Database:
             for i in result:
                 return eval(i[0])
 
-    def get_results_in_form_date(self, id_person):
+    def set_dates(self, id_person, dates):
+        self.cursor.execute(
+            "UPDATE `Tasks` SET `dates` = ? WHERE `id` = ?",
+            (str(dates), id_person,)
+        )
+        self.connection.commit()
+
+    def get_marks(self, id_person):
         with self.connection:
             result = self.cursor.execute(
-                "SELECT `results_in_form_date` FROM `Tasks` WHERE `id` = ?",
+                "SELECT `marks` FROM `Tasks` WHERE `id` = ?",
                 (id_person,)
             )
             for i in result:
                 return eval(i[0])
 
-    def get_results_in_form_int_number(self, id_person):
+    def set_marks(self, id_person, marks):
+        self.cursor.execute(
+            "UPDATE `Tasks` SET `marks` = ? WHERE `id` = ?",
+            (str(marks), id_person,)
+        )
+        self.connection.commit()
+
+    def get_comments(self, id_person):
         with self.connection:
             result = self.cursor.execute(
-                "SELECT `results_in_form_int_number` FROM `Tasks` WHERE `id` = ?",
+                "SELECT `comments` FROM `Tasks` WHERE `id` = ?",
                 (id_person,)
             )
             for i in result:
                 return eval(i[0])
 
-    def get_results_in_form_float_number(self, id_person):
-        with self.connection:
-            result = self.cursor.execute(
-                "SELECT `results_in_form_float_number` FROM `Tasks` WHERE `id` = ?",
-                (id_person,)
-            )
-            for i in result:
-                return eval(i[0])
-
-    def get_results_in_form_text(self, id_person):
-        with self.connection:
-            result = self.cursor.execute(
-                "SELECT `results_in_form_text` FROM `Tasks` WHERE `id` = ?",
-                (id_person,)
-            )
-            for i in result:
-                return eval(i[0])
+    def set_comments(self, id_person, comments):
+        self.cursor.execute(
+            "UPDATE `Tasks` SET `comments` = ? WHERE `id` = ?",
+            (str(comments), id_person,)
+        )
+        self.connection.commit()
 
 
 db = Database("database.sqlite")  # Экземпляр класса Database для работы с бд
