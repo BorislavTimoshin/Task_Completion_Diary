@@ -1,12 +1,15 @@
 from PyQt5.QtWidgets import QMainWindow, QAction, QLabel, QComboBox
 from PyQt5.QtWidgets import QTableWidget, QTableWidgetItem, QPushButton
 from PyQt5.QtWidgets import QAbstractScrollArea, QHBoxLayout, QWidget
-from PyQt5.QtWidgets import QLineEdit
+from PyQt5.QtWidgets import QLineEdit, QFileDialog
 from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import Qt
 from main_buttons import CreateTask, AddEntry, AboutProgram
 from warnings_dialog_window import warning_dialog_window
 from database import db
+import pandas as pd
+import csv
+import os
 
 
 # Класс с главным окном для работы с аккаунтом пользователя
@@ -20,21 +23,23 @@ class MainWindow(QMainWindow):
         self.setGeometry(550, 200, 800, 700)
         self.setWindowTitle("Дневник выполнения спортивных задач")
 
-        self.download_chart = QAction(QIcon("Images/chart.png"), "Скачать график", self)
-        self.download_data = QAction(QIcon("Images/table.png"), "Скачать таблицу", self)
-        self.show_chart = QAction(QIcon("Images/chart.png"), "Показать график", self)
-        self.program_version = QAction(QIcon("Images/version.jpg"), "Версия программы", self)
-        self.program_version.triggered.connect(self.about_program_dialog)
+        self.download_chart_action = QAction(QIcon("Images/chart.png"), "Скачать график", self)
+        self.download_table_action = QAction(QIcon("Images/table.png"), "Скачать таблицу", self)
+        self.show_chart_action = QAction(QIcon("Images/chart.png"), "Показать график", self)
+        self.program_version_action = QAction(QIcon("Images/version.jpg"), "Версия программы", self)
+
+        self.program_version_action.triggered.connect(self.about_program_dialog)
+        self.download_table_action.triggered.connect(self.download_table)
 
         self.menu = self.menuBar()
         self.file_menu = self.menu.addMenu("Файл")
         self.data_menu = self.menu.addMenu("Данные")
         self.about_program_menu = self.menu.addMenu("О программе")
 
-        self.file_menu.addAction(self.download_chart)
-        self.file_menu.addAction(self.download_data)
-        self.data_menu.addAction(self.show_chart)
-        self.about_program_menu.addAction(self.program_version)
+        self.file_menu.addAction(self.download_chart_action)
+        self.file_menu.addAction(self.download_table_action)
+        self.data_menu.addAction(self.show_chart_action)
+        self.about_program_menu.addAction(self.program_version_action)
 
         self.horizontalLayoutWidget = QWidget(self)
         self.horizontalLayoutWidget.setGeometry(10, 10, 771, 80)
@@ -61,6 +66,7 @@ class MainWindow(QMainWindow):
 
         task_names = db.get_task_names(self.id_person)
         result_names = db.get_result_names(self.id_person)
+        measurementes = db.get_measurementes(self.id_person)
 
         self.btn_open_task = QComboBox(self)
         self.btn_open_task.setGeometry(180, 410, 201, 22)
@@ -71,6 +77,9 @@ class MainWindow(QMainWindow):
         if current_task:
             index_current_task = task_names.index(current_task)
             result_value = result_names[index_current_task]
+            measurement = measurementes[index_current_task]
+            if measurement not in ["Число", "Время"]:
+                result_value = f"{result_value} ({measurement})"
         else:
             result_value = ""
 
@@ -79,15 +88,15 @@ class MainWindow(QMainWindow):
         self.table.setColumnCount(4)
         self.table.setSizeAdjustPolicy(QAbstractScrollArea.AdjustToContents)
         self.table.horizontalHeader().setStretchLastSection(True)
-        self.table.setColumnWidth(0, 150)
+        self.table.setColumnWidth(1, 160)
 
-        self.result_value = QTableWidgetItem(result_value)
         self.date_value = QTableWidgetItem("Дата")
-        self.mark_value = QTableWidgetItem("Оценка\nрезультата")
+        self.result_value = QTableWidgetItem(result_value)
+        self.mark_value = QTableWidgetItem("Оценка \nрезультата")
         self.comment_value = QTableWidgetItem("Комментарий к результату")
 
-        self.table.setHorizontalHeaderItem(0, self.result_value)
-        self.table.setHorizontalHeaderItem(1, self.date_value)
+        self.table.setHorizontalHeaderItem(0, self.date_value)
+        self.table.setHorizontalHeaderItem(1, self.result_value)
         self.table.setHorizontalHeaderItem(2, self.mark_value)
         self.table.setHorizontalHeaderItem(3, self.comment_value)
 
@@ -109,6 +118,38 @@ class MainWindow(QMainWindow):
         self.btn_delete_entry = QPushButton("Удалить запись", self)
         self.btn_delete_entry.setGeometry(20, 560, 187, 28)
         self.btn_delete_entry.clicked.connect(self.delete_entry)
+
+    def download_table(self):
+        file_path, file_type = QFileDialog.getSaveFileName(
+            self,
+            'Скачать таблицу',
+            '',
+            'All Files(*.xlsx);;CSV Files (*.csv)'
+        )
+        if not file_path:
+            return
+        csv_path = file_path.replace(".xlsx", ".csv")
+        with open(csv_path, 'w', encoding="utf-8", newline='') as file:
+            writer = csv.writer(file)
+            writer.writerow([
+                self.date_value.text(),
+                self.result_value.text(),
+                self.mark_value.text(),
+                self.comment_value.text()
+            ])
+            for i in range(self.table.rowCount()):
+                writer.writerow([
+                    self.table.item(i, 0).text(),
+                    self.table.item(i, 1).text(),
+                    self.table.item(i, 2).text(),
+                    self.table.item(i, 3).text()
+                ])
+        if file_type == "All Files(*.xlsx)":
+            csv_file = pd.read_csv(csv_path)
+            excel_file = pd.ExcelWriter(file_path)
+            csv_file.to_excel(excel_file, index=False)
+            excel_file.save()
+            os.remove(csv_path)
 
     def about_program_dialog(self):
         self.about_program = AboutProgram()
@@ -150,8 +191,8 @@ class MainWindow(QMainWindow):
             row = 0
             self.table.setRowCount(len(results))
             for result, date, mark, comment in zip(results, dates, marks, comments):
-                self.table.setItem(row, 0, QTableWidgetItem(str(result)))
-                self.table.setItem(row, 1, QTableWidgetItem(str(date.date())))
+                self.table.setItem(row, 0, QTableWidgetItem(str(date.date())))
+                self.table.setItem(row, 1, QTableWidgetItem(str(result)))
                 self.table.setItem(row, 2, QTableWidgetItem(mark))
                 self.table.setItem(row, 3, QTableWidgetItem(comment))
                 row += 1
@@ -162,8 +203,12 @@ class MainWindow(QMainWindow):
         task_names = db.get_task_names(self.id_person)
         index_task = task_names.index(task)
         result_name = db.get_result_names(self.id_person)[index_task]
+        measurementes = db.get_measurementes(self.id_person)
+        measurement = measurementes[index_task]
+        if measurement not in ["Число", "Время"]:
+            result_name = f"{result_name} ({measurement})"
         self.result_value.setText(result_name)
-        self.table.setHorizontalHeaderItem(0, self.result_value)
+        self.table.setHorizontalHeaderItem(1, self.result_value)
         self.fill_table(task)
 
     def delete_entry(self):
@@ -192,8 +237,8 @@ class MainWindow(QMainWindow):
             row = 0
             self.table.setRowCount(len(results[index_task]))
             for result, date, mark, comment in zip(results[index_task], dates[index_task], marks[index_task], comments[index_task]):
-                self.table.setItem(row, 0, QTableWidgetItem(str(result)))
-                self.table.setItem(row, 1, QTableWidgetItem(str(date.date())))
+                self.table.setItem(row, 0, QTableWidgetItem(str(date.date())))
+                self.table.setItem(row, 1, QTableWidgetItem(str(result)))
                 self.table.setItem(row, 2, QTableWidgetItem(mark))
                 self.table.setItem(row, 3, QTableWidgetItem(comment))
                 row += 1

@@ -62,6 +62,8 @@ class CreateTask(QDialog):
                         warning_dialog_window.task_exists()
                     else:
                         db.set_new_task(self.id_person, task_name, result_name, measurement)
+                        if measurement not in ["Число", "Время"]:
+                            result_name = f"{result_name} ({measurement})"
                         self.reject()
                         self.btn_open_task.addItem(task_name)
                         self.btn_open_task.setCurrentText(task_name)
@@ -74,7 +76,7 @@ class CreateTask(QDialog):
                         db.set_dates(self.id_person, dates + [[]])
                         db.set_marks(self.id_person, marks + [[]])
                         db.set_comments(self.id_person, comments + [[]])
-                        self.table.setHorizontalHeaderItem(0, self.result_value)
+                        self.table.setHorizontalHeaderItem(1, self.result_value)
                         self.table.setRowCount(0)
                         if self.is_login_account:
                             self.parent.close()
@@ -109,7 +111,7 @@ class AddEntry(QDialog):
         self.setGeometry(550, 200, 800, 700)
 
         buttons_add_entry = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel, self)
-        buttons_add_entry.move(670, 600)
+        buttons_add_entry.move(580, 600)
 
         self.title_result = QLabel(f"<html><head/><body><p><span style=\" font-size:10pt; font-weight:600;\">"
                                    f"Укажите {self.get_result_name()}:</span></p></body></html>", self)
@@ -148,8 +150,6 @@ class AddEntry(QDialog):
         self.title_data = QLabel("<html><head/><body><p><span style=\" font-size:10pt; font-weight:600;\">"
                                  "Укажите дату выполнения спортивной задачи:</span></p></body></html>", self)
         self.title_data.setGeometry(10, 295, 420, 30)
-
-        form_layout = QFormLayout(self)
 
         self.verticalLayoutWidget = QWidget(self)
         self.verticalLayoutWidget.setContentsMargins(0, 0, 0, 0)
@@ -227,8 +227,8 @@ class AddEntry(QDialog):
 
         for result, date, mark, comment in zip(results[index_task], dates[index_task], marks[index_task],
                                                comments[index_task]):
-            self.table.setItem(row, 0, QTableWidgetItem(str(result)))
-            self.table.setItem(row, 1, QTableWidgetItem(str(date.date())))
+            self.table.setItem(row, 0, QTableWidgetItem(str(date.date())))
+            self.table.setItem(row, 1, QTableWidgetItem(str(result)))
             self.table.setItem(row, 2, QTableWidgetItem(mark))
             self.table.setItem(row, 3, QTableWidgetItem(comment))
             row += 1
