@@ -137,18 +137,18 @@ class MainWindow(QMainWindow):
         self.add_entry.show()
 
     def fill_table(self, task=None):
+        """ Метод заполняющий таблицу данными """
         if task is None:
             task = self.btn_open_task.currentText()
-        if task:
+        if task:  # Если задание не пустое
             task_names = db.get_task_names(self.id_person)
             index_task = task_names.index(task)
-            row = 0
             results = db.get_results(self.id_person)[index_task]
             dates = db.get_dates(self.id_person)[index_task]
             marks = db.get_marks(self.id_person)[index_task]
             comments = db.get_comments(self.id_person)[index_task]
+            row = 0
             self.table.setRowCount(len(results))
-
             for result, date, mark, comment in zip(results, dates, marks, comments):
                 self.table.setItem(row, 0, QTableWidgetItem(str(result)))
                 self.table.setItem(row, 1, QTableWidgetItem(str(date.date())))
@@ -157,6 +157,7 @@ class MainWindow(QMainWindow):
                 row += 1
 
     def open_task(self, index):
+        """ Метод, открывающий выбранное пользователем задание и заполняющий таблицу """
         task = self.btn_open_task.model().itemFromIndex(index).text()
         task_names = db.get_task_names(self.id_person)
         index_task = task_names.index(task)
@@ -169,34 +170,35 @@ class MainWindow(QMainWindow):
         number_entry = self.delete_row_of_entry.text()
         try:
             number_entry = int(number_entry) - 1
-            task = self.btn_open_task.currentText()
-            task_names = db.get_task_names(self.id_person)
-            index_task = task_names.index(task)
-            results = db.get_results(self.id_person)
-            dates = db.get_dates(self.id_person)
-            marks = db.get_marks(self.id_person)
-            comments = db.get_comments(self.id_person)
-            if (len(results[index_task]) < number_entry + 1) or number_entry < 0:
-                warning_dialog_window.row_not_exists()
-            else:
-                del results[index_task][number_entry]
-                del dates[index_task][number_entry]
-                del marks[index_task][number_entry]
-                del comments[index_task][number_entry]
-
-                row = 0
-                self.table.setRowCount(len(results[index_task]))
-
-                for result, date, mark, comment in zip(results[index_task], dates[index_task], marks[index_task], comments[index_task]):
-                    self.table.setItem(row, 0, QTableWidgetItem(str(result)))
-                    self.table.setItem(row, 1, QTableWidgetItem(str(date.date())))
-                    self.table.setItem(row, 2, QTableWidgetItem(mark))
-                    self.table.setItem(row, 3, QTableWidgetItem(comment))
-                    row += 1
-
-                db.set_results(self.id_person, results)
-                db.set_dates(self.id_person, dates)
-                db.set_marks(self.id_person, marks)
-                db.set_comments(self.id_person, comments)
         except ValueError:
             warning_dialog_window.is_not_number()
+            return
+        task = self.btn_open_task.currentText()
+        task_names = db.get_task_names(self.id_person)
+        index_task = task_names.index(task)
+        results = db.get_results(self.id_person)
+        dates = db.get_dates(self.id_person)
+        marks = db.get_marks(self.id_person)
+        comments = db.get_comments(self.id_person)
+        if (len(results[index_task]) < number_entry + 1) or number_entry < 0:
+            warning_dialog_window.row_not_exists()
+        else:
+            # Удаляем элементы с номером строки, который ввели
+            del results[index_task][number_entry]
+            del dates[index_task][number_entry]
+            del marks[index_task][number_entry]
+            del comments[index_task][number_entry]
+            # Заполняем таблицу с новыми данными
+            row = 0
+            self.table.setRowCount(len(results[index_task]))
+            for result, date, mark, comment in zip(results[index_task], dates[index_task], marks[index_task], comments[index_task]):
+                self.table.setItem(row, 0, QTableWidgetItem(str(result)))
+                self.table.setItem(row, 1, QTableWidgetItem(str(date.date())))
+                self.table.setItem(row, 2, QTableWidgetItem(mark))
+                self.table.setItem(row, 3, QTableWidgetItem(comment))
+                row += 1
+            # Добавляем в бд новые данные после удаления
+            db.set_results(self.id_person, results)
+            db.set_dates(self.id_person, dates)
+            db.set_marks(self.id_person, marks)
+            db.set_comments(self.id_person, comments)

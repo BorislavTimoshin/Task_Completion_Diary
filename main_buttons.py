@@ -168,7 +168,7 @@ class AddEntry(QDialog):
         buttons_add_entry.rejected.connect(self.reject)
 
     def get_index_task(self):
-        """ Получить индекс текущего выбранного задания в btn_open_task в списке заданий """
+        """ Получить индекс текущего выбранного задания в btn_open_task в списке заданий бд """
         task = self.btn_open_task.currentText()
         tasks = db.get_task_names(self.id_person)
         return tasks.index(task)
@@ -266,6 +266,7 @@ class AddEntry(QDialog):
             warning_dialog_window.len_comment_more_45()
 
 
+# Класс для открытия диалогового окна: о программе
 class AboutProgram(QDialog):
     def __init__(self):
         super().__init__()
@@ -273,21 +274,20 @@ class AboutProgram(QDialog):
 
     def initUI(self):
         self.setWindowTitle("О программе")
-        self.setGeometry(700, 300, 700, 400)
+        self.setGeometry(650, 300, 610, 400)
 
         buttons_new_task = QDialogButtonBox(QDialogButtonBox.Ok, self)
         buttons_new_task.accepted.connect(self.accept)
-        buttons_new_task.move(400, 360)
+        buttons_new_task.move(440, 360)
 
         self.pixmap_book = QPixmap("Images/book.png")
         self.book = QLabel(self)
-        self.setGeometry(600, 300, 600, 400)
+        self.book.setGeometry(18, 85, 200, 218)
         self.book.setPixmap(self.pixmap_book)
-        self.book.hide()
 
         with open("about_program.txt", "r", encoding="utf-8") as txt_file:
             text = txt_file.read()
 
         self.textEdit = QPlainTextEdit(text, self)
-        self.textEdit.setGeometry(200, 40, 351, 301)
+        self.textEdit.setGeometry(230, 40, 351, 301)
         self.textEdit.setReadOnly(True)
