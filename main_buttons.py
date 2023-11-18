@@ -1,8 +1,9 @@
 from PyQt5.QtWidgets import QLineEdit, QTimeEdit, QComboBox
 from PyQt5.QtWidgets import QDialog, QDialogButtonBox, QLabel
 from PyQt5.QtWidgets import QWidget, QCalendarWidget, QTableWidgetItem
-from PyQt5.QtWidgets import QVBoxLayout, QFormLayout
-from datetime import datetime
+from PyQt5.QtWidgets import QVBoxLayout, QFormLayout, QPlainTextEdit
+from PyQt5.QtGui import QPixmap
+from datetime import datetime, time
 from warnings_dialog_window import warning_dialog_window
 from database import db
 
@@ -108,6 +109,7 @@ class AddEntry(QDialog):
         self.setGeometry(550, 200, 800, 700)
 
         buttons_add_entry = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel, self)
+        buttons_add_entry.move(670, 600)
 
         self.title_result = QLabel(f"<html><head/><body><p><span style=\" font-size:10pt; font-weight:600;\">"
                                    f"Укажите {self.get_result_name()}:</span></p></body></html>", self)
@@ -162,26 +164,29 @@ class AddEntry(QDialog):
         self.calendarWidget = QCalendarWidget(self.verticalLayoutWidget)
         self.verticalLayout.addWidget(self.calendarWidget)
 
-        form_layout.addWidget(buttons_add_entry)
         buttons_add_entry.accepted.connect(self.accept)
         buttons_add_entry.rejected.connect(self.reject)
 
     def get_index_task(self):
+        """ Получить индекс текущего выбранного задания в btn_open_task в списке заданий """
         task = self.btn_open_task.currentText()
         tasks = db.get_task_names(self.id_person)
         return tasks.index(task)
 
     def get_result_name(self):
+        """ Получить имя результата, которое вставится в заголовок таблицы в соответствии с выбранным заданием """
         result_names = db.get_result_names(self.id_person)
         index_result = self.get_index_task()
         return result_names[index_result]
 
     def get_measurement(self):
+        """ Получить единицу измерения результата """
         measurements = db.get_measurementes(self.id_person)
         index_measurement = self.get_index_task()
         return measurements[index_measurement]
 
     def get_index_insertion(self, date, dates):
+        """ Получить индекс в вставки в список списка: в список конкретного задания """
         index_task = self.get_index_task()
         dates = dates[index_task]
         start = 0
@@ -238,6 +243,11 @@ class AddEntry(QDialog):
         result = None
         if measurement == "Время":
             result = self.result_in_form_time.time()
+            result = time(
+                hour=result.hour(),
+                minute=result.minute(),
+                second=result.second()
+            )
         else:
             try:
                 result = float(self.result_in_form_int.text().replace(",", ".", 1))
@@ -254,3 +264,30 @@ class AddEntry(QDialog):
                 self.close()
         else:
             warning_dialog_window.len_comment_more_45()
+
+
+class AboutProgram(QDialog):
+    def __init__(self):
+        super().__init__()
+        self.initUI()
+
+    def initUI(self):
+        self.setWindowTitle("О программе")
+        self.setGeometry(700, 300, 700, 400)
+
+        buttons_new_task = QDialogButtonBox(QDialogButtonBox.Ok, self)
+        buttons_new_task.accepted.connect(self.accept)
+        buttons_new_task.move(400, 360)
+
+        self.pixmap_book = QPixmap("Images/book.png")
+        self.book = QLabel(self)
+        self.setGeometry(600, 300, 600, 400)
+        self.book.setPixmap(self.pixmap_book)
+        self.book.hide()
+
+        with open("about_program.txt", "r", encoding="utf-8") as txt_file:
+            text = txt_file.read()
+
+        self.textEdit = QPlainTextEdit(text, self)
+        self.textEdit.setGeometry(200, 40, 351, 301)
+        self.textEdit.setReadOnly(True)

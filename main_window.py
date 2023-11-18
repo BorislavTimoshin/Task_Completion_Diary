@@ -1,9 +1,11 @@
 from PyQt5.QtWidgets import QMainWindow, QAction, QLabel, QComboBox
 from PyQt5.QtWidgets import QTableWidget, QTableWidgetItem, QPushButton
 from PyQt5.QtWidgets import QAbstractScrollArea, QHBoxLayout, QWidget
+from PyQt5.QtWidgets import QLineEdit
 from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import Qt
-from main_buttons import CreateTask, AddEntry
+from main_buttons import CreateTask, AddEntry, AboutProgram
+from warnings_dialog_window import warning_dialog_window
 from database import db
 
 
@@ -19,9 +21,10 @@ class MainWindow(QMainWindow):
         self.setWindowTitle("Дневник выполнения спортивных задач")
 
         self.download_chart = QAction(QIcon("Images/chart.png"), "Скачать график", self)
-        self.save_data = QAction(QIcon("Images/table.png"), "Сохранить таблицу", self)
+        self.download_data = QAction(QIcon("Images/table.png"), "Скачать таблицу", self)
         self.show_chart = QAction(QIcon("Images/chart.png"), "Показать график", self)
         self.program_version = QAction(QIcon("Images/version.jpg"), "Версия программы", self)
+        self.program_version.triggered.connect(self.about_program_dialog)
 
         self.menu = self.menuBar()
         self.file_menu = self.menu.addMenu("Файл")
@@ -29,7 +32,7 @@ class MainWindow(QMainWindow):
         self.about_program_menu = self.menu.addMenu("О программе")
 
         self.file_menu.addAction(self.download_chart)
-        self.data_menu.addAction(self.save_data)
+        self.file_menu.addAction(self.download_data)
         self.data_menu.addAction(self.show_chart)
         self.about_program_menu.addAction(self.program_version)
 
@@ -48,14 +51,9 @@ class MainWindow(QMainWindow):
         self.horizontalLayout.addWidget(self.btn_new_entry)
         self.btn_new_entry.clicked.connect(self.add_entry_to_table)
 
-        self.btn_delete_entry = QPushButton("Удалить запись", self.horizontalLayoutWidget)
-        self.btn_delete_entry.setGeometry(460, 40, 141, 31)
-        self.horizontalLayout.addWidget(self.btn_delete_entry)
-
         light_blue_color = "QPushButton""{""background-color : lightblue;""}"
         self.btn_create_task.setStyleSheet(light_blue_color)
         self.btn_new_entry.setStyleSheet(light_blue_color)
-        self.btn_delete_entry.setStyleSheet(light_blue_color)
 
         self.lbl_open_task = QLabel("<html><head/><body><p><span style=\" font-size:9pt; font-weight:600;\">"
                                     "Открыть задачу:</span></p></body></html>", self)
@@ -99,6 +97,22 @@ class MainWindow(QMainWindow):
         self.table.verticalHeader().setStyleSheet(stylesheet)
 
         self.fill_table()
+
+        self.title_delete_entry = QLabel("<html><head/><body><p><span style=\" font-size:9pt; font-weight:600;\">"
+                                         "Удалить запись:</span></p></body></html>", self)
+        self.title_delete_entry.setGeometry(20, 480, 141, 21)
+
+        self.delete_row_of_entry = QLineEdit(self)
+        self.delete_row_of_entry.setPlaceholderText("Введите номер строки, которую хотите удалить")
+        self.delete_row_of_entry.setGeometry(20, 520, 321, 22)
+
+        self.btn_delete_entry = QPushButton("Удалить запись", self)
+        self.btn_delete_entry.setGeometry(20, 560, 187, 28)
+        self.btn_delete_entry.clicked.connect(self.delete_entry)
+
+    def about_program_dialog(self):
+        self.about_program = AboutProgram()
+        self.about_program.show()
 
     def create_new_task(self, is_login_account=False, ex_main_window=None, parent=None, username=None, password=None):
         self.new_task = CreateTask(
@@ -150,3 +164,39 @@ class MainWindow(QMainWindow):
         self.result_value.setText(result_name)
         self.table.setHorizontalHeaderItem(0, self.result_value)
         self.fill_table(task)
+
+    def delete_entry(self):
+        number_entry = self.delete_row_of_entry.text()
+        try:
+            number_entry = int(number_entry) - 1
+            task = self.btn_open_task.currentText()
+            task_names = db.get_task_names(self.id_person)
+            index_task = task_names.index(task)
+            results = db.get_results(self.id_person)
+            dates = db.get_dates(self.id_person)
+            marks = db.get_marks(self.id_person)
+            comments = db.get_comments(self.id_person)
+            if (len(results[index_task]) < number_entry + 1) or number_entry < 0:
+                warning_dialog_window.row_not_exists()
+            else:
+                del results[index_task][number_entry]
+                del dates[index_task][number_entry]
+                del marks[index_task][number_entry]
+                del comments[index_task][number_entry]
+
+                row = 0
+                self.table.setRowCount(len(results[index_task]))
+
+                for result, date, mark, comment in zip(results[index_task], dates[index_task], marks[index_task], comments[index_task]):
+                    self.table.setItem(row, 0, QTableWidgetItem(str(result)))
+                    self.table.setItem(row, 1, QTableWidgetItem(str(date.date())))
+                    self.table.setItem(row, 2, QTableWidgetItem(mark))
+                    self.table.setItem(row, 3, QTableWidgetItem(comment))
+                    row += 1
+
+                db.set_results(self.id_person, results)
+                db.set_dates(self.id_person, dates)
+                db.set_marks(self.id_person, marks)
+                db.set_comments(self.id_person, comments)
+        except ValueError:
+            warning_dialog_window.is_not_number()
