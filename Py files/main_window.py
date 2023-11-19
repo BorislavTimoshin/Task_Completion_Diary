@@ -23,10 +23,10 @@ class MainWindow(QMainWindow):
         self.setGeometry(550, 200, 800, 700)
         self.setWindowTitle("Дневник выполнения спортивных задач")
 
-        self.download_chart_action = QAction(QIcon("Images/chart.png"), "Скачать график", self)
-        self.download_table_action = QAction(QIcon("Images/table.png"), "Скачать таблицу", self)
-        self.show_chart_action = QAction(QIcon("Images/chart.png"), "Показать график", self)
-        self.program_version_action = QAction(QIcon("Images/version.jpg"), "Версия программы", self)
+        self.download_chart_action = QAction(QIcon("../Images/chart.png"), "Скачать график", self)
+        self.download_table_action = QAction(QIcon("../Images/table.png"), "Скачать таблицу", self)
+        self.show_chart_action = QAction(QIcon("../Images/chart.png"), "Показать график", self)
+        self.program_version_action = QAction(QIcon("../Images/version.jpg"), "Версия программы", self)
 
         self.program_version_action.triggered.connect(self.about_program_dialog)
         self.download_table_action.triggered.connect(self.download_table)
@@ -66,7 +66,7 @@ class MainWindow(QMainWindow):
 
         task_names = db.get_task_names(self.id_person)
         result_names = db.get_result_names(self.id_person)
-        measurementes = db.get_measurementes(self.id_person)
+        measurements = db.get_measurements(self.id_person)
 
         self.btn_open_task = QComboBox(self)
         self.btn_open_task.setGeometry(180, 410, 201, 22)
@@ -77,7 +77,7 @@ class MainWindow(QMainWindow):
         if current_task:
             index_current_task = task_names.index(current_task)
             result_value = result_names[index_current_task]
-            measurement = measurementes[index_current_task]
+            measurement = measurements[index_current_task]
             if measurement not in ["Число", "Время"]:
                 result_value = f"{result_value} ({measurement})"
         else:
@@ -119,12 +119,16 @@ class MainWindow(QMainWindow):
         self.btn_delete_entry.setGeometry(20, 560, 187, 28)
         self.btn_delete_entry.clicked.connect(self.delete_entry)
 
+        self.btn_delete_task = QPushButton("Удалить задачу", self)
+        self.btn_delete_task.setGeometry(450, 410, 291, 28)
+        self.btn_delete_task.clicked.connect(self.delete_task)
+
     def download_table(self):
         file_path, file_type = QFileDialog.getSaveFileName(
             self,
             'Скачать таблицу',
             '',
-            'All Files(*.xlsx);;CSV Files (*.csv)'
+            'All Other files(*.xlsx);;CSV Other files (*.csv)'
         )
         if not file_path:
             return
@@ -144,7 +148,7 @@ class MainWindow(QMainWindow):
                     self.table.item(i, 2).text(),
                     self.table.item(i, 3).text()
                 ])
-        if file_type == "All Files(*.xlsx)":
+        if file_type == "All Other files(*.xlsx)":
             csv_file = pd.read_csv(csv_path)
             excel_file = pd.ExcelWriter(file_path)
             csv_file.to_excel(excel_file, index=False)
@@ -197,14 +201,15 @@ class MainWindow(QMainWindow):
                 self.table.setItem(row, 3, QTableWidgetItem(comment))
                 row += 1
 
-    def open_task(self, index):
+    def open_task(self, index, is_deleting_task=False, task=None):
         """ Метод, открывающий выбранное пользователем задание и заполняющий таблицу """
-        task = self.btn_open_task.model().itemFromIndex(index).text()
+        if not is_deleting_task:
+            task = self.btn_open_task.model().itemFromIndex(index).text()
         task_names = db.get_task_names(self.id_person)
         index_task = task_names.index(task)
         result_name = db.get_result_names(self.id_person)[index_task]
-        measurementes = db.get_measurementes(self.id_person)
-        measurement = measurementes[index_task]
+        measurements = db.get_measurements(self.id_person)
+        measurement = measurements[index_task]
         if measurement not in ["Число", "Время"]:
             result_name = f"{result_name} ({measurement})"
         self.result_value.setText(result_name)
@@ -247,3 +252,44 @@ class MainWindow(QMainWindow):
             db.set_dates(self.id_person, dates)
             db.set_marks(self.id_person, marks)
             db.set_comments(self.id_person, comments)
+
+    def delete_task(self):
+        task = self.btn_open_task.currentText()
+        task_names = db.get_task_names(self.id_person)
+        if len(task_names) > 1:
+            answer = warning_dialog_window.want_delete_task(self)
+            if answer:
+                index_task = task_names.index(task)
+                result_names = db.get_result_names(self.id_person)
+                measurements = db.get_measurements(self.id_person)
+                results = db.get_results(self.id_person)
+                dates = db.get_dates(self.id_person)
+                marks = db.get_marks(self.id_person)
+                comments = db.get_comments(self.id_person)
+                # Удаляем, все, что связано с этим заданием
+                self.btn_open_task.removeItem(index_task)
+                del task_names[index_task]
+                del result_names[index_task]
+                del measurements[index_task]
+                del results[index_task]
+                del dates[index_task]
+                del marks[index_task]
+                del comments[index_task]
+                # Добавляем в бд новые данные после удаления
+                db.set_result_names(self.id_person, result_names)
+                db.set_task_names(self.id_person, task_names)
+                db.set_measurements(self.id_person, measurements)
+                db.set_results(self.id_person, results)
+                db.set_dates(self.id_person, dates)
+                db.set_marks(self.id_person, marks)
+                db.set_comments(self.id_person, comments)
+                # Открываем первое задание
+                self.btn_open_task.setCurrentIndex(0)
+                self.open_task(
+                    0,
+                    is_deleting_task=True,
+                    task=task_names[0]
+                )
+
+        else:
+            warning_dialog_window.last_task_cannot_be_deleted()

@@ -56,5 +56,28 @@ class WarningDialogWindow:
         msg.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
         msg.exec()
 
+    @staticmethod
+    def last_task_cannot_be_deleted():
+        msg = QMessageBox()
+        msg.setIcon(QMessageBox.Critical)
+        msg.setText("Последняя задача не может быть удалена")
+        msg.setWindowTitle("Ошибка в удалении задачи")
+        msg.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
+        msg.exec()
+
+    @staticmethod
+    def want_delete_task(parent):
+        msg = QMessageBox()
+        answer = msg.question(
+            parent,
+            "Удаление задачи",
+            "Хотите удалить задачу? Восстановление будет невозможно",
+            msg.Yes | msg.No
+        )
+        if answer == msg.Yes:
+            return True
+        if answer == msg.No:
+            return False
+
 
 warning_dialog_window = WarningDialogWindow()

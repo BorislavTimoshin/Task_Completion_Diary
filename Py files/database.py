@@ -56,6 +56,13 @@ class Database:
             for i in result:
                 return i[0]
 
+    def set_task_names(self, id_person, task_names):
+        self.cursor.execute(
+            "UPDATE `Tasks` SET `task_names` = ? WHERE `id` = ?",
+            (str(task_names), id_person,)
+        )
+        self.connection.commit()
+
     def get_task_names(self, id_person):
         with self.connection:
             result = self.cursor.execute(
@@ -64,6 +71,13 @@ class Database:
             ).fetchall()
             for i in result:
                 return eval(i[0])
+
+    def set_result_names(self, id_person, result_names):
+        self.cursor.execute(
+            "UPDATE `Tasks` SET `result_names` = ? WHERE `id` = ?",
+            (str(result_names), id_person,)
+        )
+        self.connection.commit()
 
     def get_result_names(self, id_person):
         with self.connection:
@@ -74,7 +88,14 @@ class Database:
             for i in result:
                 return eval(i[0])
 
-    def get_measurementes(self, id_person):
+    def set_measurements(self, id_person, measurements):
+        self.cursor.execute(
+            "UPDATE `Tasks` SET `measurements` = ? WHERE `id` = ?",
+            (str(measurements), id_person,)
+        )
+        self.connection.commit()
+
+    def get_measurements(self, id_person):
         with self.connection:
             result = self.cursor.execute(
                 "SELECT `measurements` FROM `Tasks` WHERE `id` = ?",
@@ -95,10 +116,10 @@ class Database:
                 "UPDATE `Tasks` SET `result_names` = ? WHERE `id` = ?",
                 (str(result_names + [result_name]), id_person,)
             )
-            measurementes = self.get_measurementes(id_person)
+            measurements = self.get_measurements(id_person)
             self.cursor.execute(
                 "UPDATE `Tasks` SET `measurements` = ? WHERE `id` = ?",
-                (str(measurementes + [measurement]), id_person,)
+                (str(measurements + [measurement]), id_person,)
             )
             self.connection.commit()
 

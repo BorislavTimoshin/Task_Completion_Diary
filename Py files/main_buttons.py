@@ -37,7 +37,7 @@ class CreateTask(QDialog):
 
         self.title_name_result = "Название результата (не более 15 символов)"
         self.name_result = QLineEdit(self)
-        self.name_result.setPlaceholderText("Например, дальность")
+        self.name_result.setPlaceholderText("Например, расстояние")
         form_layout.addRow(self.title_name_result, self.name_result)
 
         self.title_unit_of_measurement = "Единица измерения результата"
@@ -181,7 +181,7 @@ class AddEntry(QDialog):
 
     def get_measurement(self):
         """ Получить единицу измерения результата """
-        measurements = db.get_measurementes(self.id_person)
+        measurements = db.get_measurements(self.id_person)
         index_measurement = self.get_index_task()
         return measurements[index_measurement]
 
@@ -280,12 +280,12 @@ class AboutProgram(QDialog):
         buttons_new_task.accepted.connect(self.accept)
         buttons_new_task.move(440, 360)
 
-        self.pixmap_book = QPixmap("Images/book.png")
+        self.pixmap_book = QPixmap("../Images/book.png")
         self.book = QLabel(self)
         self.book.setGeometry(18, 85, 200, 218)
         self.book.setPixmap(self.pixmap_book)
 
-        with open("about_program.txt", "r", encoding="utf-8") as txt_file:
+        with open("../Other files/about_program.txt", "r", encoding="utf-8") as txt_file:
             text = txt_file.read()
 
         self.textEdit = QPlainTextEdit(text, self)
