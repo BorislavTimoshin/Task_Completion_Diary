@@ -1,7 +1,7 @@
 from PyQt5.QtWidgets import QMainWindow, QLineEdit, QPushButton, QLabel
 from PyQt5.QtGui import QPixmap
-from database import db
-from main_window import MainWindow
+from Py_files.database import db
+from Py_files.main_window import MainWindow
 
 
 # Класс для работы с окном: авторизация пользователя
@@ -14,7 +14,7 @@ class Authorization(QMainWindow):
         self.setGeometry(600, 200, 700, 400)
         self.setWindowTitle("Авторизация")
 
-        self.pixmap_authorization = QPixmap("../Images/authorization.gif")
+        self.pixmap_authorization = QPixmap("Images/authorization.gif")
         self.image_authorization = QLabel(self)
         self.image_authorization.move(30, 70)
         self.image_authorization.resize(320, 320)
@@ -71,7 +71,7 @@ class Login(QMainWindow):
         self.setGeometry(600, 200, 700, 500)
         self.setWindowTitle("Вход в аккаунт")
 
-        self.pixmap_authorization = QPixmap("../Images/authorization.gif")
+        self.pixmap_authorization = QPixmap("Images/authorization.gif")
         self.image_authorization = QLabel(self)
         self.image_authorization.move(30, 70)
         self.image_authorization.resize(320, 320)
@@ -154,7 +154,7 @@ class Registration(QMainWindow):
         self.setGeometry(600, 200, 700, 500)
         self.setWindowTitle("Регистрация")
 
-        self.pixmap_authorization = QPixmap("../Images/authorization.gif")
+        self.pixmap_authorization = QPixmap("Images/authorization.gif")
         self.image_authorization = QLabel(self)
         self.image_authorization.move(30, 70)
         self.image_authorization.resize(320, 320)

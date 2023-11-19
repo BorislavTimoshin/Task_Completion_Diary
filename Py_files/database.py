@@ -188,4 +188,4 @@ class Database:
         self.connection.commit()
 
 
-db = Database("database.sqlite")  # Экземпляр класса Database для работы с бд
+db = Database("Other_files/database.sqlite")  # Экземпляр класса Database для работы с бд

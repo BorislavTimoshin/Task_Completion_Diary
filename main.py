@@ -1,7 +1,7 @@
 import sys
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtCore import Qt
-from authorization import Authorization
+from Py_files.authorization import Authorization
 
 if hasattr(Qt, 'AA_EnableHighDpiScaling'):
     QApplication.setAttribute(Qt.AA_EnableHighDpiScaling, True)

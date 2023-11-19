@@ -4,8 +4,8 @@ from PyQt5.QtWidgets import QWidget, QCalendarWidget, QTableWidgetItem
 from PyQt5.QtWidgets import QVBoxLayout, QFormLayout, QPlainTextEdit
 from PyQt5.QtGui import QPixmap
 from datetime import datetime, time
-from warnings_dialog_window import warning_dialog_window
-from database import db
+from Py_files.warnings_dialog_window import warning_dialog_window
+from Py_files.database import db
 
 
 # Класс для открытия окна: открыть задание
@@ -280,12 +280,12 @@ class AboutProgram(QDialog):
         buttons_new_task.accepted.connect(self.accept)
         buttons_new_task.move(440, 360)
 
-        self.pixmap_book = QPixmap("../Images/book.png")
+        self.pixmap_book = QPixmap("Images/book.png")
         self.book = QLabel(self)
         self.book.setGeometry(18, 85, 200, 218)
         self.book.setPixmap(self.pixmap_book)
 
-        with open("../Other files/about_program.txt", "r", encoding="utf-8") as txt_file:
+        with open("Other_files/about_program.txt", "r", encoding="utf-8") as txt_file:
             text = txt_file.read()
 
         self.textEdit = QPlainTextEdit(text, self)

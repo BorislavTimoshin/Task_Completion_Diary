@@ -4,9 +4,9 @@ from PyQt5.QtWidgets import QAbstractScrollArea, QHBoxLayout, QWidget
 from PyQt5.QtWidgets import QLineEdit, QFileDialog
 from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import Qt
-from main_buttons import CreateTask, AddEntry, AboutProgram
-from warnings_dialog_window import warning_dialog_window
-from database import db
+from Py_files.main_buttons import CreateTask, AddEntry, AboutProgram
+from Py_files.warnings_dialog_window import warning_dialog_window
+from Py_files.database import db
 import pandas as pd
 import csv
 import os
@@ -23,10 +23,10 @@ class MainWindow(QMainWindow):
         self.setGeometry(550, 200, 800, 700)
         self.setWindowTitle("Дневник выполнения спортивных задач")
 
-        self.download_chart_action = QAction(QIcon("../Images/chart.png"), "Скачать график", self)
-        self.download_table_action = QAction(QIcon("../Images/table.png"), "Скачать таблицу", self)
-        self.show_chart_action = QAction(QIcon("../Images/chart.png"), "Показать график", self)
-        self.program_version_action = QAction(QIcon("../Images/version.jpg"), "Версия программы", self)
+        self.download_chart_action = QAction(QIcon("Images/chart.png"), "Скачать график", self)
+        self.download_table_action = QAction(QIcon("Images/table.png"), "Скачать таблицу", self)
+        self.show_chart_action = QAction(QIcon("Images/chart.png"), "Показать график", self)
+        self.program_version_action = QAction(QIcon("Images/version.jpg"), "Версия программы", self)
 
         self.program_version_action.triggered.connect(self.about_program_dialog)
         self.download_table_action.triggered.connect(self.download_table)
@@ -128,7 +128,7 @@ class MainWindow(QMainWindow):
             self,
             'Скачать таблицу',
             '',
-            'All Other files(*.xlsx);;CSV Other files (*.csv)'
+            'All Other_files(*.xlsx);;CSV Other_files (*.csv)'
         )
         if not file_path:
             return
@@ -148,7 +148,7 @@ class MainWindow(QMainWindow):
                     self.table.item(i, 2).text(),
                     self.table.item(i, 3).text()
                 ])
-        if file_type == "All Other files(*.xlsx)":
+        if file_type == "All Other_files(*.xlsx)":
             csv_file = pd.read_csv(csv_path)
             excel_file = pd.ExcelWriter(file_path)
             csv_file.to_excel(excel_file, index=False)
